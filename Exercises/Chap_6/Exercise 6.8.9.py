@@ -8,9 +8,12 @@ from sklearn import preprocessing
 from sklearn.model_selection import RepeatedKFold
 from sklearn.linear_model import Ridge, Lasso
 from sklearn.model_selection import GridSearchCV
-
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.cross_decomposition import PLSRegression, PLSSVD
+from sklearn import model_selection
 import numpy as np
-
+import matplotlib.pyplot as plt
 from sklearn.metrics import explained_variance_score, max_error, r2_score, mean_squared_error, mean_absolute_error
 
 def evaluate_predictions(y_pred, y):
@@ -96,3 +99,74 @@ print(result.coef_.tolist())
 
 print("Results for Lasso:")
 print(evaluate_predictions(y_test, lasso_model.predict(X_test)))
+
+## PCR ##
+print("PCR: ")
+pca = PCA()
+X_reduced_train = pca.fit_transform(X_train)
+
+# 10-fold CV, with shuffle
+n = len(X_reduced_train)
+kf_10 = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
+
+regr = LinearRegression()
+mse = []
+
+# Calculate MSE with only the intercept (no principal components in regression)
+score = -1 * model_selection.cross_val_score(regr, np.ones((n, 1)), y_train.values.ravel(), cv=kf_10,
+                                             scoring='neg_mean_squared_error').mean()
+mse.append(score)
+
+# Calculate MSE using CV for the 16 principle components, adding one component at the time.
+for i in np.arange(1, 17):
+    score = -1 * model_selection.cross_val_score(regr, X_reduced_train[:, :i], y_train.values.ravel(), cv=kf_10,
+                                                 scoring='neg_mean_squared_error').mean()
+    mse.append(score)
+
+# Plot results
+plt.plot(mse, '-v')
+plt.xlabel('Number of principal components in regression')
+plt.ylabel('MSE')
+plt.title('Applications')
+plt.xlim(xmin=-1)
+plt.show()
+
+X_reduced_test = pca.transform(X_test)[:,:7]
+
+# Train regression model on training data
+regr = LinearRegression()
+regr.fit(X_reduced_train[:,:7], y_train)
+
+print("Results for PCR:")
+print(evaluate_predictions(y_test, regr.predict(X_reduced_test)))
+
+## PLS ##
+print("PLS: ")
+
+n = len(X_train)
+
+# 10-fold CV, with shuffle
+kf_10 = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
+
+mse = []
+
+for i in np.arange(1, 17):
+    pls = PLSRegression(n_components=i)
+    score = model_selection.cross_val_score(pls, X_train, y_train, cv=kf_10, scoring='neg_mean_squared_error').mean()
+    mse.append(-score)
+
+# Plot results
+plt.plot(np.arange(1, 17), np.array(mse), '-v')
+plt.xlabel('Number of principal components in regression')
+plt.ylabel('MSE')
+plt.title('Applications')
+plt.xlim(xmin=-1)
+plt.show()
+
+pls = PLSRegression(n_components=10)
+pls.fit(X_train, y_train)
+
+print("Results for PLS:")
+print(evaluate_predictions(y_test, pls.predict(X_test)))
+
+print("Done")
