@@ -127,7 +127,7 @@ for i in np.arange(1, 17):
 plt.plot(mse, '-v')
 plt.xlabel('Number of principal components in regression')
 plt.ylabel('MSE')
-plt.title('Applications')
+plt.title('PCR - Applications')
 plt.xlim(xmin=-1)
 plt.show()
 
@@ -159,7 +159,7 @@ for i in np.arange(1, 17):
 plt.plot(np.arange(1, 17), np.array(mse), '-v')
 plt.xlabel('Number of principal components in regression')
 plt.ylabel('MSE')
-plt.title('Applications')
+plt.title('PLS - Applications')
 plt.xlim(xmin=-1)
 plt.show()
 
