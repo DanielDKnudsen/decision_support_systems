@@ -4,7 +4,6 @@ from scipy import stats
 import numpy as np
 from sklearn.metrics import explained_variance_score, max_error, r2_score, mean_squared_error, mean_absolute_error
 
-
 def create_interval(ols_result, interval_type, alpha, x_values, conf_x):
     if interval_type == 'confidence':
         add_one = 0

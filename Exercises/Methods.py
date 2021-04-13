@@ -47,3 +47,4 @@ def evaluate_predictions(y_pred, y):
     result += "\nR2 score: {}".format(r2_score(y, y_pred))
     result += "\nMean Absolute Error: {}".format(mean_absolute_error(y, y_pred))
     return result
+
